@@ -21,14 +21,23 @@
     <h2>③ 出題したい漢字</h2>
     <div id="kanjiList" class="kanji-list"></div>
 
-    <h2>④ かくすマス数</h2>
+    <h2>④ 自由入力で追加（学年・学期が分からないときはこちら）</h2>
+    <p class="free-input-note">出したい字をまとめて打ち込んでください（例：秋空栗松）。漢字だけを自動で拾って候補に追加します。</p>
+    <div class="free-input-area">
+      <input type="text" id="freeInputField" placeholder="例：秋空栗松">
+      <button id="addFreeBtn">追加</button>
+    </div>
+    <p class="free-input-hint">タップで出題ON/OFF、ダブルクリック（ダブルタップ）で候補から削除できます。</p>
+    <div id="freeKanjiList" class="kanji-list"></div>
+
+    <h2>⑤ かくすマス数</h2>
     <div class="button-group">
       <button class="gridBtn" data-grid="4">4マス</button>
       <button class="gridBtn" data-grid="6">6マス</button>
       <button class="gridBtn" data-grid="9">9マス</button>
     </div>
 
-    <h2>⑤ 出題数</h2>
+    <h2>⑥ 出題数</h2>
     <p>※ 出題数を制限する場合はこちらを選んでください</p>
     <div class="button-group">
       <button class="countBtn" data-count="5">5問</button>

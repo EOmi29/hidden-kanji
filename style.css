@@ -1,0 +1,254 @@
+@import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap');
+
+/* 全体の基本設定 (変更なし) */
+body {
+    font-family: "UD デジタル 教科書体 N-B", "UD Digi Kyokasho N-B", "Noto Sans JP", sans-serif;
+    background: #FFF7E8;
+    color: #444;
+    text-align: center;
+    margin: 0;
+    padding-bottom: 50px;
+    user-select: none;
+}
+
+/* レイアウト (変更なし) */
+.container, .play-container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+
+h1 {
+    margin-top: 30px;
+    color: #d35400;
+    font-size: 36px;
+    text-shadow: 2px 2px 0px #fff;
+}
+
+h2 {
+    font-size: 20px;
+    margin-top: 40px;
+    margin-bottom: 15px;
+    color: #555;
+    border-bottom: 2px dashed #FFD59E;
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
+/* ボタンの共通デザイン (変更なし) */
+button {
+    padding: 12px 24px;
+    margin: 6px;
+    border: none;
+    border-radius: 15px;
+    background: #FFD59E;
+    font-size: 16px;
+    font-weight: bold;
+    color: #555;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #e6b87d;
+    transition: 0.1s;
+    font-family: inherit;
+}
+
+button:hover { background: #ffe0b5; }
+button:active { transform: translateY(2px); box-shadow: 0 2px 0 #e6b87d; }
+button.active { background: #FFB74D; box-shadow: 0 4px 0 #d99a3d; color: white; }
+
+#startBtn {
+    background: #FF8A65;
+    color: white;
+    font-size: 24px;
+    padding: 15px 60px;
+    box-shadow: 0 6px 0 #d86d4f;
+    margin-top: 40px;
+}
+#startBtn:active { box-shadow: 0 2px 0 #d86d4f; }
+
+/* 小学校・中学校の区切りラベル (変更なし) */
+#gradeButtons p {
+    text-align: left;
+    max-width: 800px;
+    margin: 20px auto 10px;
+    padding-left: 10px;
+    border-left: 6px solid #FFB74D;
+    font-weight: bold;
+    color: #555;
+}
+
+/* 漢字リスト（タイル表示） (変更なし) */
+.kanji-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    max-width: 850px;
+    margin: 20px auto;
+}
+.kanji-list span {
+    font-size: 28px;
+    width: 56px;
+    height: 56px;
+    background: white;
+    border: 2px solid #FFD59E;
+    border-radius: 12px;
+    box-shadow: 0 4px 0 #FFD59E;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.1s;
+}
+.kanji-list span:hover { background: #fffdfa; }
+.kanji-list span.selected {
+    background: #FFB74D;
+    color: white;
+    box-shadow: 0 4px 0 #d99a3d;
+    border-color: #FFB74D;
+    transform: translateY(-2px);
+}
+
+/* 自由入力エリア */
+.free-input-note {
+    font-size: 14px;
+    color: #777;
+    margin: 0 auto 10px;
+    max-width: 500px;
+}
+.free-input-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+#freeInputField {
+    font-family: inherit;
+    font-size: 20px;
+    padding: 10px 16px;
+    border: 2px solid #FFD59E;
+    border-radius: 15px;
+    width: 260px;
+    max-width: 60vw;
+    text-align: center;
+    color: #444;
+}
+#freeInputField:focus {
+    outline: none;
+    border-color: #FF8A65;
+}
+#addFreeBtn {
+    background: #FF8A65;
+    color: white;
+    box-shadow: 0 4px 0 #d86d4f;
+}
+#addFreeBtn:active { box-shadow: 0 2px 0 #d86d4f; }
+.free-input-hint {
+    font-size: 13px;
+    color: #999;
+    margin-top: 0;
+}
+
+/* =========================================
+   プレイ画面の漢字エリア (★ここを修正)
+   ========================================= */
+.kanji-area {
+    position: relative;
+    margin: 30px auto;
+    width: 420px;
+    height: 420px;
+    background: #fff;
+    border-radius: 25px; /* 外枠の丸みは維持 */
+    box-shadow: 0 0 0 10px #FFD59E;
+    overflow: hidden; /* はみ出した漢字を隠す */
+}
+
+.kanji-char {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* ★漢字サイズを大幅アップ (280px -> 360px) */
+    font-size: 360px;
+    font-weight: bold;
+    color: #333;
+    z-index: 1;
+    line-height: 1; /* 行間を詰めて中央寄せを安定させる */
+}
+
+.cover-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    /* ★隙間(gap)と余白(padding)を0にして完全に密着させる */
+    gap: 0;
+    padding: 0;
+    box-sizing: border-box;
+    z-index: 10;
+}
+
+.cover {
+    background: #FFD59E;
+    /* ★丸みなし */
+    border-radius: 0;
+    /* ★濃いオレンジ色で縁取りを追加 */
+    border: 1px solid #d99a3d; 
+    /* ボーダーを含めてサイズ計算するように設定（隙間防止） */
+    box-sizing: border-box;
+    
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.3s;
+    
+    /* 隣り合うボーダーが重なって太く見えないように調整 */
+    margin: -0.5px; 
+}
+
+.cover:hover {
+    /* ホバー時に少しだけ色を変えて「押せる」ことを分かりやすく */
+    background: #ffbc6e;
+}
+.cover.hidden {
+    opacity: 0;
+    pointer-events: none;
+    /* 消える時のアニメーションは少しリッチに */
+    transform: scale(1.1); 
+}
+
+/* 得点表示エリア (変更なし) */
+.score-area {
+    margin: 20px 0;
+    padding: 15px;
+    background: #FFF3D8;
+    border: 3px dashed #FFD59E;
+    border-radius: 20px;
+    display: inline-block;
+    min-width: 300px;
+}
+#scoreDisplay {
+    font-size: 20px;
+    color: #d35400;
+    font-weight: bold;
+    height: 30px;
+}
+#totalScoreDisplay {
+    font-size: 24px;
+    margin-top: 5px;
+}
+
+/* 判定ボタン (変更なし) */
+.judge-area {
+    margin-top: 15px;
+    animation: fadeIn 0.3s;
+}
+#correctBtn { background: #4CAF50; color: white; box-shadow: 0 4px 0 #388E3C; }
+#wrongBtn { background: #F44336; color: white; box-shadow: 0 4px 0 #D32F2F; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
