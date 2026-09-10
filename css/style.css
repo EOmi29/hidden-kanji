@@ -108,6 +108,47 @@ button.active { background: #FFB74D; box-shadow: 0 4px 0 #d99a3d; color: white; 
     transform: translateY(-2px);
 }
 
+/* 自由入力エリア */
+.free-input-note {
+    font-size: 14px;
+    color: #777;
+    margin: 0 auto 10px;
+    max-width: 500px;
+}
+.free-input-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+#freeInputField {
+    font-family: inherit;
+    font-size: 20px;
+    padding: 10px 16px;
+    border: 2px solid #FFD59E;
+    border-radius: 15px;
+    width: 260px;
+    max-width: 60vw;
+    text-align: center;
+    color: #444;
+}
+#freeInputField:focus {
+    outline: none;
+    border-color: #FF8A65;
+}
+#addFreeBtn {
+    background: #FF8A65;
+    color: white;
+    box-shadow: 0 4px 0 #d86d4f;
+}
+#addFreeBtn:active { box-shadow: 0 2px 0 #d86d4f; }
+.free-input-hint {
+    font-size: 13px;
+    color: #999;
+    margin-top: 0;
+}
+
 /* =========================================
    プレイ画面の漢字エリア (★ここを修正)
    ========================================= */
