@@ -7,12 +7,15 @@ const allKanjiData = {
 let selectedGrades = [];
 let selectedTerms = [];
 let selectedKanji = [];
+let freeKanjiList = [];
 let gridSize = 6;
 let limitCount = 0;
 
 const gradeButtonsDiv = document.getElementById("gradeButtons");
 const termButtonsDiv = document.getElementById("termButtons");
 const kanjiListDiv = document.getElementById("kanjiList");
+const freeKanjiListDiv = document.getElementById("freeKanjiList");
+const freeInputField = document.getElementById("freeInputField");
 
 // ===== ① カテゴリーボタン（小学校・中学校を分けて生成） =====
 function renderGradeButtons() {
@@ -142,6 +145,51 @@ function renderKanjiList() {
   });
 }
 
+// ===== ④ 自由入力で追加 =====
+function renderFreeKanjiList() {
+  freeKanjiListDiv.innerHTML = "";
+  freeKanjiList.forEach(k => {
+    const span = document.createElement("span");
+    span.textContent = k;
+    span.classList.add("selected"); // 入力した字は最初からON
+    span.onclick = () => {
+      span.classList.toggle("selected");
+    };
+    span.ondblclick = () => {
+      freeKanjiList = freeKanjiList.filter(x => x !== k);
+      renderFreeKanjiList();
+    };
+    freeKanjiListDiv.appendChild(span);
+  });
+}
+
+function addFreeKanji() {
+  const raw = freeInputField.value;
+  // 漢字（Hanスクリプト）だけを抽出し、重複を除く
+  const chars = [...new Set(raw.match(/\p{Script=Han}/gu) || [])];
+
+  if (chars.length === 0) {
+    if (raw.trim() !== "") alert("漢字が見つかりませんでした");
+    return;
+  }
+
+  chars.forEach(c => {
+    if (!freeKanjiList.includes(c)) freeKanjiList.push(c);
+  });
+
+  freeInputField.value = "";
+  renderFreeKanjiList();
+}
+
+document.getElementById("addFreeBtn").onclick = addFreeKanji;
+
+freeInputField.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    addFreeKanji();
+  }
+});
+
 // ===== ボタンイベント初期設定 =====
 document.getElementById("selectAllKanjiBtn").onclick = () => {
   document.querySelectorAll("#kanjiList span").forEach(span => {
@@ -174,8 +222,8 @@ function shuffle(array) {
 
 document.getElementById("startBtn").onclick = () => {
   const picked = [];
-  document.querySelectorAll("#kanjiList span.selected").forEach(span => {
-    picked.push(span.textContent);
+  document.querySelectorAll("#kanjiList span.selected, #freeKanjiList span.selected").forEach(span => {
+    if (!picked.includes(span.textContent)) picked.push(span.textContent);
   });
 
   if (picked.length === 0) {
