@@ -154,7 +154,8 @@ button.active { background: #FFB74D; box-shadow: 0 4px 0 #d99a3d; color: white; 
    ========================================= */
 .kanji-area {
     position: relative;
-    margin: 30px auto;
+    margin: 30px 0;
+    flex: 0 0 auto;
     width: 420px;
     height: 420px;
     background: #fff;
@@ -251,4 +252,124 @@ button.active { background: #FFB74D; box-shadow: 0 4px 0 #d99a3d; color: white; 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* =========================================
+   ホーム画面：ふりがな・順番に現れる項目
+   ========================================= */
+.container { line-height: 1.5; }
+.container ruby { ruby-position: over; ruby-align: center; }
+.container ruby rt {
+    font-size: 0.6em;
+    font-weight: normal;
+    color: #888;
+    letter-spacing: 0;
+}
+.container h2 { line-height: 1.9; }
+.container button { line-height: 1.7; }
+.container button.active ruby rt { color: #fff; }
+.container p { line-height: 1.9; }
+
+.step[hidden] { display: none !important; }
+.step.reveal { animation: fadeIn 0.35s; }
+
+.button-group > div { margin: 6px 0; }
+.junior-btn { background: #BDE3F5; box-shadow: 0 4px 0 #94c6df; }
+.junior-btn:hover { background: #d3eefa; }
+.junior-btn.active { background: #5BB5E0; box-shadow: 0 4px 0 #3f94bd; color: white; }
+
+.home-message {
+    color: #c0392b;
+    font-weight: bold;
+    margin: 6px 0;
+}
+
+/* =========================================
+   プレイ画面：こたえをみる → 読み方（左）・熟語（右）
+   ========================================= */
+.answer-stage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 28px;
+}
+
+.side-panel {
+    flex: 0 0 190px;
+    width: 190px;
+    height: 420px;
+    box-sizing: border-box;
+    padding: 12px 10px;
+    background: #fff;
+    border: 4px solid #FFD59E;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* 押す前は場所だけ確保して見えなくする（漢字がずれないように） */
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+.side-panel.show { visibility: visible; opacity: 1; }
+
+.panel-title {
+    flex: 0 0 auto;
+    font-size: 16px;
+    font-weight: bold;
+    color: #d35400;
+    border-bottom: 2px dashed #FFD59E;
+    padding: 0 12px 4px;
+    margin-bottom: 8px;
+}
+
+/* 縦書き（右の列から左へ並ぶ） */
+.panel-body {
+    flex: 1 1 0;
+    min-height: 0;
+    writing-mode: vertical-rl;
+    text-align: start;
+    color: #333;
+    font-weight: bold;
+}
+.panel-body .item { line-height: 1.3; }
+.panel-body .item:not(:last-child) { margin-left: 16px; }
+.reading-item { font-size: 30px; }
+.reading-item.xlong { font-size: 22px; }
+.word-item { font-size: 36px; }
+.word-item.long { font-size: 30px; }
+.word-item.xlong { font-size: 24px; }
+.tcy { text-combine-upright: all; }
+.okuri { color: #e67e22; }
+
+.no-data-note {
+    font-size: 14px;
+    color: #999;
+    margin: 0 0 10px;
+}
+
+/* 画面がせまいときは、漢字の下に横書きで並べる */
+@media (max-width: 920px) {
+    .answer-stage { flex-direction: column; gap: 0; }
+    .kanji-area { order: 0; }
+    .side-panel {
+        order: 1;
+        flex: 0 0 auto;
+        width: min(420px, 90vw);
+        height: auto;
+        margin-bottom: 14px;
+        /* 場所を取らないよう、押すまでは非表示 */
+        display: none;
+    }
+    .side-panel.show { display: flex; }
+    .panel-body {
+        flex: 0 0 auto;
+        writing-mode: horizontal-tb;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 4px 20px;
+    }
+    .panel-body .item:not(:last-child) { margin-left: 0; }
 }
