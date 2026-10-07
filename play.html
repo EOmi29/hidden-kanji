@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>漢字のまど｜問題</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -9,19 +10,33 @@
   <div class="play-container">
     <div class="question-number" id="qNum">第1問</div>
 
-    <div class="kanji-area">
-      <div id="kanjiChar" class="kanji-char">漢</div>
-      <div id="coverGrid" class="cover-grid"></div>
+    <div class="answer-stage">
+      <!-- 左：読み方（こたえをみる を押すと表示） -->
+      <div class="side-panel" id="readingPanel">
+        <div class="panel-title">よみ</div>
+        <div class="panel-body" id="readingBody"></div>
+      </div>
+
+      <div class="kanji-area">
+        <div id="kanjiChar" class="kanji-char">漢</div>
+        <div id="coverGrid" class="cover-grid"></div>
+      </div>
+
+      <!-- 右：熟語（こたえをみる を押すと表示） -->
+      <div class="side-panel" id="wordsPanel">
+        <div class="panel-title">じゅくご</div>
+        <div class="panel-body" id="wordsBody"></div>
+      </div>
     </div>
+    <p class="no-data-note" id="noDataNote" hidden>この漢字の読みと熟語は、まだ登録されていません。</p>
 
     <div class="score-area">
       <div id="scoreDisplay"></div>
       <div id="totalScoreDisplay"></div>
 
       <div class="play-buttons">
-        <button id="answerBtn">答えを見る</button>
+        <button id="answerBtn">こたえをみる</button>
 
-        <!-- ★ ここに移動 -->
         <div class="judge-area" id="judgeArea" style="display:none;">
           <button id="correctBtn">せいかい！</button>
           <button id="wrongBtn">まちがえた</button>
@@ -34,6 +49,7 @@
     </div>
   </div>
 
+  <script src="js/data.js"></script>
   <script src="js/play.js"></script>
 </body>
 </html>

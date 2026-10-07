@@ -2,55 +2,85 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>漢字のまど</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div class="container">
-    <h1>漢字のまど</h1>
-    <p>マスをめくって、少ないヒントで漢字を当てたら高得点！</p>
+    <h1><ruby>漢字<rt>かんじ</rt></ruby>のまど</h1>
+    <p>マスをめくって、<ruby>少<rt>すく</rt></ruby>ないヒントで<ruby>漢字<rt>かんじ</rt></ruby>を<ruby>当<rt>あ</rt></ruby>てたら<ruby>高得点<rt>こうとくてん</rt></ruby>！</p>
 
-    <h2>① 学年またはカテゴリーを選ぶ</h2>
-    <div id="gradeButtons" class="button-group"></div>
+    <!-- ① 自由入力（最初から表示） -->
+    <section class="step" id="stepFree">
+      <h2>① <ruby>自由<rt>じゆう</rt></ruby><ruby>入力<rt>にゅうりょく</rt></ruby>で<ruby>追加<rt>ついか</rt></ruby></h2>
+      <p class="free-input-note">
+        <ruby>出<rt>だ</rt></ruby>したい<ruby>字<rt>じ</rt></ruby>をまとめて<ruby>打<rt>う</rt></ruby>ち<ruby>込<rt>こ</rt></ruby>んでください（<ruby>例<rt>れい</rt></ruby>：<ruby>空<rt>そら</rt></ruby><ruby>星<rt>ほし</rt></ruby><ruby>雲<rt>くも</rt></ruby><ruby>降<rt>ふ</rt></ruby>）。<ruby>漢字<rt>かんじ</rt></ruby>だけを<ruby>自動<rt>じどう</rt></ruby>で<ruby>拾<rt>ひろ</rt></ruby>って<ruby>候補<rt>こうほ</rt></ruby>に<ruby>追加<rt>ついか</rt></ruby>します。<br>
+        （<ruby>学年<rt>がくねん</rt></ruby>・<ruby>学期<rt>がっき</rt></ruby>が<ruby>分<rt>わ</rt></ruby>からないときはこちら）
+      </p>
+      <div class="free-input-area">
+        <input type="text" id="freeInputField" placeholder="例：空星雲降">
+        <button id="addFreeBtn"><ruby>追加<rt>ついか</rt></ruby></button>
+      </div>
+      <p class="home-message" id="freeMessage" hidden></p>
+      <p class="free-input-hint">タップで<ruby>出題<rt>しゅつだい</rt></ruby>ON/OFF、ダブルクリック（ダブルタップ）で<ruby>候補<rt>こうほ</rt></ruby>から<ruby>削除<rt>さくじょ</rt></ruby>できます。</p>
+      <div id="freeKanjiList" class="kanji-list"></div>
+    </section>
 
-    <h2>② 学期を選ぶ（中学生漢字は「全表示」を選択）</h2>
-    <div id="termButtons" class="button-group"></div>
+    <!-- ② 学年を選ぶ（最初から表示） -->
+    <section class="step" id="stepGrade">
+      <h2>② <ruby>学年<rt>がくねん</rt></ruby>を<ruby>選<rt>えら</rt></ruby>ぶ</h2>
+      <div id="gradeButtons" class="button-group"></div>
+    </section>
 
-    <button id="selectAllKanjiBtn">漢字を全部選択</button>
+    <!-- ③ 学期を選ぶ（1〜6年を選んだら表示） -->
+    <section class="step" id="stepTerm" hidden>
+      <h2>③ <ruby>学期<rt>がっき</rt></ruby>を<ruby>選<rt>えら</rt></ruby>ぶ</h2>
+      <div id="termButtons" class="button-group"></div>
+    </section>
 
-    <h2>③ 出題したい漢字</h2>
-    <div id="kanjiList" class="kanji-list"></div>
+    <!-- ③ 読み方を選ぶ（中学生を選んだら表示） -->
+    <section class="step" id="stepJunior" hidden>
+      <h2>③ <ruby>読<rt>よ</rt></ruby>み<ruby>方<rt>かた</rt></ruby>を<ruby>選<rt>えら</rt></ruby>ぶ</h2>
+      <div id="juniorButtons" class="button-group"></div>
+    </section>
 
-    <h2>④ 自由入力で追加（学年・学期が分からないときはこちら）</h2>
-    <p class="free-input-note">出したい字をまとめて打ち込んでください（例：秋空栗松）。漢字だけを自動で拾って候補に追加します。</p>
-    <div class="free-input-area">
-      <input type="text" id="freeInputField" placeholder="例：秋空栗松">
-      <button id="addFreeBtn">追加</button>
-    </div>
-    <p class="free-input-hint">タップで出題ON/OFF、ダブルクリック（ダブルタップ）で候補から削除できます。</p>
-    <div id="freeKanjiList" class="kanji-list"></div>
+    <!-- ④ 出題したい漢字（学期・読み方を選んだら表示） -->
+    <section class="step" id="stepKanji" hidden>
+      <h2>④ <ruby>出題<rt>しゅつだい</rt></ruby>したい<ruby>漢字<rt>かんじ</rt></ruby></h2>
+      <div>
+        <button id="selectAllKanjiBtn"><ruby>漢字<rt>かんじ</rt></ruby>を<ruby>全部<rt>ぜんぶ</rt></ruby><ruby>選択<rt>せんたく</rt></ruby></button>
+      </div>
+      <div id="kanjiList" class="kanji-list"></div>
+    </section>
 
-    <h2>⑤ かくすマス数</h2>
-    <div class="button-group">
-      <button class="gridBtn" data-grid="4">4マス</button>
-      <button class="gridBtn" data-grid="6">6マス</button>
-      <button class="gridBtn" data-grid="9">9マス</button>
-    </div>
+    <!-- ⑤ かくすマス数（漢字を1つ以上選んだら表示） -->
+    <section class="step" id="stepGrid" hidden>
+      <h2>⑤ かくすマス<ruby>数<rt>すう</rt></ruby></h2>
+      <div class="button-group">
+        <button class="gridBtn" data-grid="4">4マス</button>
+        <button class="gridBtn" data-grid="6">6マス</button>
+        <button class="gridBtn" data-grid="9">9マス</button>
+      </div>
+    </section>
 
-    <h2>⑥ 出題数</h2>
-    <p>※ 出題数を制限する場合はこちらを選んでください</p>
-    <div class="button-group">
-      <button class="countBtn" data-count="5">5問</button>
-      <button class="countBtn" data-count="10">10問</button>
-      <button class="countBtn" data-count="15">15問</button>
-      <button class="countBtn" data-count="20">20問</button>
-    </div>
-
-    <br>
-    <button id="startBtn">スタート</button>
+    <!-- ⑥ 出題数＋スタート（マス数を選んだら表示） -->
+    <section class="step" id="stepCount" hidden>
+      <h2>⑥ <ruby>出題数<rt>しゅつだいすう</rt></ruby></h2>
+      <p>※ <ruby>出題数<rt>しゅつだいすう</rt></ruby>を<ruby>制限<rt>せいげん</rt></ruby>する<ruby>場合<rt>ばあい</rt></ruby>はこちらを<ruby>選<rt>えら</rt></ruby>んでください</p>
+      <div class="button-group">
+        <button class="countBtn" data-count="5">5<ruby>問<rt>もん</rt></ruby></button>
+        <button class="countBtn" data-count="10">10<ruby>問<rt>もん</rt></ruby></button>
+        <button class="countBtn" data-count="15">15<ruby>問<rt>もん</rt></ruby></button>
+        <button class="countBtn" data-count="20">20<ruby>問<rt>もん</rt></ruby></button>
+      </div>
+      <br>
+      <button id="startBtn">スタート</button>
+      <p class="home-message" id="startMessage" hidden></p>
+    </section>
   </div>
 
-  <script src="js/kanjiData.js"></script>
+  <script src="js/data.js"></script>
   <script src="js/home.js"></script>
 </body>
 </html>
