@@ -1,57 +1,110 @@
-// 1. データの統合（windowオブジェクトから確実に取得）
-const allKanjiData = { 
-  ...(window.kanjiData || {}), 
-  ...(window.juniorKanjiData || {}) 
-};
+// ===== データの整理 =====
+// js/data.js（kanjiData: 配列）から、学年・学期ごと／中学生の読みごとのリストを作る
+const JUNIOR = "中学生";
+const JUNIOR_GROUPS = [
+  { label: "あ", terms: [1] },
+  { label: "か", terms: [2] },
+  { label: "さ", terms: [3] },
+  { label: "た", terms: [4] },
+  { label: "な・は", terms: [5, 6] },
+  { label: "ま・や・ら・わ", terms: [7, 8, 9, 10] }
+];
 
-let selectedGrades = [];
-let selectedTerms = [];
-let selectedKanji = [];
+const elementary = {}; // elementary[学年][学期] = [漢字...]
+const junior = {};     // junior[読みのグループ] = [漢字...]
+
+kanjiData.forEach(e => {
+  if (e.grade >= 1 && e.grade <= 6) {
+    if (!elementary[e.grade]) elementary[e.grade] = {};
+    if (!elementary[e.grade][e.term]) elementary[e.grade][e.term] = [];
+    elementary[e.grade][e.term].push(e.kanji);
+  }
+});
+JUNIOR_GROUPS.forEach(gp => {
+  junior[gp.label] = kanjiData
+    .filter(e => e.grade === 7 && gp.terms.includes(e.term))
+    .map(e => e.kanji);
+});
+
+// ===== 状態 =====
+let selectedGrades = [];   // "1"〜"6" と JUNIOR
+let selectedTerms = [];    // "学年-学期"（例 "2-3"）
+let selectedReadings = []; // "あ" "か" ...
 let freeKanjiList = [];
 let gridSize = 6;
+let gridChosen = false;
 let limitCount = 0;
 
 const gradeButtonsDiv = document.getElementById("gradeButtons");
 const termButtonsDiv = document.getElementById("termButtons");
+const juniorButtonsDiv = document.getElementById("juniorButtons");
 const kanjiListDiv = document.getElementById("kanjiList");
 const freeKanjiListDiv = document.getElementById("freeKanjiList");
 const freeInputField = document.getElementById("freeInputField");
 
-// ===== ① カテゴリーボタン（小学校・中学校を分けて生成） =====
+const stepTerm = document.getElementById("stepTerm");
+const stepJunior = document.getElementById("stepJunior");
+const stepKanji = document.getElementById("stepKanji");
+const stepGrid = document.getElementById("stepGrid");
+const stepCount = document.getElementById("stepCount");
+
+// ふりがな付きの文字列を作る
+const ruby = (base, yomi) => `<ruby>${base}<rt>${yomi}</rt></ruby>`;
+
+// ===== 項目の表示・非表示（上から順に現れる） =====
+function setVisible(el, show) {
+  if (show && el.hidden) {
+    el.hidden = false;
+    el.classList.remove("reveal");
+    void el.offsetWidth; // アニメーションをやり直す
+    el.classList.add("reveal");
+  } else if (!show) {
+    el.hidden = true;
+  }
+}
+
+function countPicked() {
+  return document.querySelectorAll("#kanjiList span.selected, #freeKanjiList span.selected").length;
+}
+
+function updateFlow() {
+  const hasElementary = selectedGrades.some(g => g !== JUNIOR);
+  const hasJunior = selectedGrades.includes(JUNIOR);
+  const hasPick = countPicked() > 0;
+
+  setVisible(stepTerm, hasElementary);
+  setVisible(stepJunior, hasJunior);
+  setVisible(stepKanji, kanjiListDiv.children.length > 0);
+  setVisible(stepGrid, hasPick);
+  setVisible(stepCount, hasPick && gridChosen);
+}
+
+// 画面内メッセージ（alertの代わり。ふりがな付きで表示できる）
+function showMessage(el, html) {
+  el.innerHTML = html;
+  el.hidden = false;
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => { el.hidden = true; }, 3500);
+}
+
+// ===== ② 学年ボタン（1〜6年 と 中学生） =====
 function renderGradeButtons() {
   gradeButtonsDiv.innerHTML = "";
 
-  // --- 小学校セクション ---
-  const primarySection = document.createElement("div");
-  primarySection.innerHTML = "<p style='margin: 10px 0 5px; font-weight: bold; color: #2c3e50;'>【小学校】学年を選択</p>";
-  gradeButtonsDiv.appendChild(primarySection);
-
-  // 1〜6年を順番に生成
   for (let g = 1; g <= 6; g++) {
-    if (allKanjiData[g]) {
-      const btn = document.createElement("button");
-      btn.textContent = g + "年";
-      btn.classList.add("primary-btn"); // CSSで色分けしたい時用のクラス名
-      btn.onclick = () => toggleGrade(g.toString(), btn);
-      gradeButtonsDiv.appendChild(btn);
-    }
+    if (!elementary[g]) continue;
+    const btn = document.createElement("button");
+    btn.innerHTML = `${g}${ruby("年", "ねん")}`;
+    btn.classList.add("primary-btn");
+    btn.onclick = () => toggleGrade(String(g), btn);
+    gradeButtonsDiv.appendChild(btn);
   }
 
-  // --- 中学校セクション ---
-  const juniorSection = document.createElement("div");
-  juniorSection.innerHTML = "<p style='margin: 20px 0 5px; font-weight: bold; color: #2c3e50;'>【中学校】読みの50音を選択</p>";
-  gradeButtonsDiv.appendChild(juniorSection);
-
-  // 数字以外（あ、か、さ...）を生成
-  for (let g in allKanjiData) {
-    if (isNaN(g)) {
-      const btn = document.createElement("button");
-      btn.textContent = g;
-      btn.classList.add("junior-btn"); // CSSで色分けしたい時用のクラス名
-      btn.onclick = () => toggleGrade(g, btn);
-      gradeButtonsDiv.appendChild(btn);
-    }
-  }
+  const jbtn = document.createElement("button");
+  jbtn.innerHTML = ruby("中学生", "ちゅうがくせい");
+  jbtn.classList.add("junior-btn");
+  jbtn.onclick = () => toggleGrade(JUNIOR, jbtn);
+  gradeButtonsDiv.appendChild(jbtn);
 }
 
 function toggleGrade(g, btn) {
@@ -62,51 +115,48 @@ function toggleGrade(g, btn) {
     selectedGrades.push(g);
     btn.classList.add("active");
   }
+
+  // 外れた学年の学期選択を取り消す
+  selectedTerms = selectedTerms.filter(key => selectedGrades.includes(key.split("-")[0]));
+  if (!selectedGrades.includes(JUNIOR)) {
+    selectedReadings = [];
+    document.querySelectorAll("#juniorButtons button").forEach(b => b.classList.remove("active"));
+  }
+
   renderTerms();
-}
-
-// ===== ② 学期または50音リストの描画 =====
-function renderTerms() {
-  termButtonsDiv.innerHTML = "";
-  
-  selectedTerms = selectedTerms.filter(key => {
-    const [g] = key.split("-");
-    return selectedGrades.includes(g);
-  });
-
-  selectedGrades.forEach(g => {
-    const data = allKanjiData[g];
-    if (!data) return;
-
-    const wrapper = document.createElement("div");
-    const label = isNaN(g) ? g : `${g}年`;
-    wrapper.innerHTML = `<strong>${label}</strong> `;
-
-    if (Array.isArray(data)) {
-      const btn = document.createElement("button");
-      btn.textContent = "全表示";
-      const key = `${g}-ALL`;
-      if (selectedTerms.includes(key)) btn.classList.add("active");
-      btn.onclick = () => toggleTerm(g, "ALL", btn);
-      wrapper.appendChild(btn);
-    } else {
-      for (let term in data) {
-        if (g === "1" && term === "1学期" && data[term].length === 0) continue;
-        const btn = document.createElement("button");
-        btn.textContent = term;
-        const key = `${g}-${term}`;
-        if (selectedTerms.includes(key)) btn.classList.add("active");
-        btn.onclick = () => toggleTerm(g, term, btn);
-        wrapper.appendChild(btn);
-      }
-    }
-    termButtonsDiv.appendChild(wrapper);
-  });
   renderKanjiList();
 }
 
-function toggleTerm(g, term, btn) {
-  const key = `${g}-${term}`;
+// ===== ③ 学期ボタン（1〜6年） =====
+function renderTerms() {
+  termButtonsDiv.innerHTML = "";
+
+  selectedGrades
+    .filter(g => g !== JUNIOR)
+    .sort((a, b) => Number(a) - Number(b))
+    .forEach(g => {
+      const data = elementary[g];
+      if (!data) return;
+
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = `<strong>${g}${ruby("年", "ねん")}</strong> `;
+
+      Object.keys(data).sort((a, b) => Number(a) - Number(b)).forEach(t => {
+        const key = `${g}-${t}`;
+        const btn = document.createElement("button");
+        btn.innerHTML = `${t}${ruby("学期", "がっき")}`;
+        if (selectedTerms.includes(key)) btn.classList.add("active");
+        btn.onclick = () => toggleTerm(key, btn);
+        wrapper.appendChild(btn);
+      });
+
+      termButtonsDiv.appendChild(wrapper);
+    });
+
+  updateFlow();
+}
+
+function toggleTerm(key, btn) {
   if (selectedTerms.includes(key)) {
     selectedTerms = selectedTerms.filter(x => x !== key);
     btn.classList.remove("active");
@@ -117,35 +167,65 @@ function toggleTerm(g, term, btn) {
   renderKanjiList();
 }
 
-// ===== ③ 漢字一覧描画 =====
-function renderKanjiList() {
-  kanjiListDiv.innerHTML = "";
-  selectedKanji = [];
-
-  selectedTerms.forEach(key => {
-    const [g, term] = key.split("-");
-    const data = allKanjiData[g];
-
-    if (term === "ALL") {
-      data.forEach(k => {
-        if (!selectedKanji.includes(k)) selectedKanji.push(k);
-      });
-    } else if (data[term]) {
-      data[term].forEach(k => {
-        if (!selectedKanji.includes(k)) selectedKanji.push(k);
-      });
-    }
-  });
-
-  selectedKanji.forEach(k => {
-    const span = document.createElement("span");
-    span.textContent = k;
-    span.onclick = () => span.classList.toggle("selected");
-    kanjiListDiv.appendChild(span);
+// ===== ③ 読み方ボタン（中学生） =====
+function renderJuniorButtons() {
+  juniorButtonsDiv.innerHTML = "";
+  JUNIOR_GROUPS.forEach(gp => {
+    const btn = document.createElement("button");
+    btn.textContent = gp.label;
+    btn.onclick = () => toggleReading(gp.label, btn);
+    juniorButtonsDiv.appendChild(btn);
   });
 }
 
-// ===== ④ 自由入力で追加 =====
+function toggleReading(label, btn) {
+  if (selectedReadings.includes(label)) {
+    selectedReadings = selectedReadings.filter(x => x !== label);
+    btn.classList.remove("active");
+  } else {
+    selectedReadings.push(label);
+    btn.classList.add("active");
+  }
+  renderKanjiList(); // 読み方を選んだ時点で、すぐ漢字の一覧を出す
+}
+
+// ===== ④ 漢字一覧 =====
+function renderKanjiList() {
+  // 選んでいた漢字は、一覧を作り直しても選択状態を引き継ぐ
+  const prevSelected = new Set(
+    [...kanjiListDiv.querySelectorAll("span.selected")].map(s => s.textContent)
+  );
+
+  const list = [];
+  const add = k => { if (!list.includes(k)) list.push(k); };
+
+  // 小学校：学年→学期の順
+  Object.keys(elementary).sort((a, b) => Number(a) - Number(b)).forEach(g => {
+    Object.keys(elementary[g]).sort((a, b) => Number(a) - Number(b)).forEach(t => {
+      if (selectedTerms.includes(`${g}-${t}`)) elementary[g][t].forEach(add);
+    });
+  });
+  // 中学校：読みの順
+  JUNIOR_GROUPS.forEach(gp => {
+    if (selectedReadings.includes(gp.label)) junior[gp.label].forEach(add);
+  });
+
+  kanjiListDiv.innerHTML = "";
+  list.forEach(k => {
+    const span = document.createElement("span");
+    span.textContent = k;
+    if (prevSelected.has(k)) span.classList.add("selected");
+    span.onclick = () => {
+      span.classList.toggle("selected");
+      updateFlow();
+    };
+    kanjiListDiv.appendChild(span);
+  });
+
+  updateFlow();
+}
+
+// ===== ① 自由入力で追加 =====
 function renderFreeKanjiList() {
   freeKanjiListDiv.innerHTML = "";
   freeKanjiList.forEach(k => {
@@ -154,6 +234,7 @@ function renderFreeKanjiList() {
     span.classList.add("selected"); // 入力した字は最初からON
     span.onclick = () => {
       span.classList.toggle("selected");
+      updateFlow();
     };
     span.ondblclick = () => {
       freeKanjiList = freeKanjiList.filter(x => x !== k);
@@ -161,6 +242,7 @@ function renderFreeKanjiList() {
     };
     freeKanjiListDiv.appendChild(span);
   });
+  updateFlow();
 }
 
 function addFreeKanji() {
@@ -169,7 +251,10 @@ function addFreeKanji() {
   const chars = [...new Set(raw.match(/\p{Script=Han}/gu) || [])];
 
   if (chars.length === 0) {
-    if (raw.trim() !== "") alert("漢字が見つかりませんでした");
+    if (raw.trim() !== "") {
+      showMessage(document.getElementById("freeMessage"),
+        `${ruby("漢字", "かんじ")}が${ruby("見", "み")}つかりませんでした`);
+    }
     return;
   }
 
@@ -195,6 +280,7 @@ document.getElementById("selectAllKanjiBtn").onclick = () => {
   document.querySelectorAll("#kanjiList span").forEach(span => {
     span.classList.add("selected");
   });
+  updateFlow();
 };
 
 document.querySelectorAll(".gridBtn").forEach(btn => {
@@ -202,6 +288,8 @@ document.querySelectorAll(".gridBtn").forEach(btn => {
     document.querySelectorAll(".gridBtn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     gridSize = Number(btn.dataset.grid);
+    gridChosen = true;
+    updateFlow();
   };
 });
 
@@ -227,7 +315,8 @@ document.getElementById("startBtn").onclick = () => {
   });
 
   if (picked.length === 0) {
-    alert("出題する漢字を選択してください");
+    showMessage(document.getElementById("startMessage"),
+      `${ruby("出題", "しゅつだい")}する${ruby("漢字", "かんじ")}を${ruby("選択", "せんたく")}してください`);
     return;
   }
 
@@ -243,3 +332,5 @@ document.getElementById("startBtn").onclick = () => {
 
 // 実行！
 renderGradeButtons();
+renderJuniorButtons();
+updateFlow();
